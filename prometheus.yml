@@ -1,0 +1,38 @@
+# Prometheus configuration to scrape the Grafana InfluxDB Exporter
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+rule_files:
+  # - "rules/*.yml"
+
+scrape_configs:
+  # Scrape the Grafana InfluxDB Exporter
+  - job_name: 'grafana-influx-exporter'
+    static_configs:
+      - targets: ['grafana-influx-exporter:8080']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    honor_labels: true
+    
+    # Optional: Add additional labels
+    relabel_configs:
+      - target_label: instance
+        replacement: 'grafana-influx-exporter'
+      - target_label: job
+        replacement: 'grafana-influx-exporter'
+
+  # Optional: Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+
+# Optional: Alerting configuration
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093

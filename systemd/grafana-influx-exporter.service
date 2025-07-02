@@ -1,0 +1,41 @@
+[Unit]
+Description=Grafana InfluxDB Exporter
+Documentation=https://github.com/your-org/grafana-influx-exporter
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=appuser
+Group=appgroup
+WorkingDirectory=/app
+ExecStart=/app/grafana-influx-exporter
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Environment variables (these can be overridden by docker/compose)
+Environment=CONFIG_PATH=/app/config.yaml
+Environment=LOG_LEVEL=info
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/app/logs
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=grafana-influx-exporter
+
+[Install]
+WantedBy=multi-user.target

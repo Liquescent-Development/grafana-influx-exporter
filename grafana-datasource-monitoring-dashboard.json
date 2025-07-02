@@ -1,0 +1,280 @@
+{
+    "id": null,
+    "title": "InfluxDB Datasource Monitoring",
+    "tags": ["monitoring", "influxdb", "datasource", "reliability"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Overall Health Score",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(grafana_influx_datasource_up) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 95},
+                {"color": "green", "value": 99}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Average Response Time",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(rate(grafana_influx_query_duration_seconds_sum[5m]) / rate(grafana_influx_query_duration_seconds_count[5m])) * 1000",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms",
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 2000},
+                {"color": "red", "value": 5000}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "(rate(grafana_influx_query_total{status=\"success\"}[5m]) / rate(grafana_influx_query_total[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 95},
+                {"color": "green", "value": 99}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Active Datasources",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(grafana_influx_datasource_up)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "Datasource Status",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "grafana_influx_datasource_up",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true},
+              "renameByName": {
+                "grafana_instance": "Grafana Instance",
+                "datasource_name": "Datasource",
+                "datasource_uid": "UID",
+                "Value": "Status"
+              }
+            }
+          }
+        ],
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Status"},
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background"
+                },
+                {
+                  "id": "mappings",
+                  "value": [
+                    {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+                    {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "Query Response Times",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(grafana_influx_query_duration_seconds_bucket[5m]))",
+            "refId": "A",
+            "legendFormat": "95th percentile - {{grafana_instance}}"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(grafana_influx_query_duration_seconds_bucket[5m]))",
+            "refId": "B",
+            "legendFormat": "50th percentile - {{grafana_instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "fillOpacity": 0,
+              "gradientMode": "none"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 7,
+        "title": "Query Success Rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "(rate(grafana_influx_query_total{status=\"success\"}[5m]) / rate(grafana_influx_query_total[5m])) * 100",
+            "refId": "A",
+            "legendFormat": "Success Rate - {{grafana_instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "fillOpacity": 10,
+              "gradientMode": "none"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 8,
+        "title": "Error Rate by Type",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(grafana_influx_query_errors_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{error_type}} - {{grafana_instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "fillOpacity": 20,
+              "gradientMode": "none",
+              "stacking": {"mode": "normal"}
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 9,
+        "title": "Query Throughput",
+        "type": "timeseries", 
+        "targets": [
+          {
+            "expr": "rate(grafana_influx_query_total[1m])",
+            "refId": "A",
+            "legendFormat": "{{status}} - {{grafana_instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "fillOpacity": 20,
+              "gradientMode": "none",
+              "stacking": {"mode": "normal"}
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "templating": {
+      "list": [
+        {
+          "name": "grafana_instance",
+          "type": "query",
+          "query": "label_values(grafana_influx_datasource_up, grafana_instance)",
+          "refresh": 1,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "datasource_name", 
+          "type": "query",
+          "query": "label_values(grafana_influx_datasource_up, datasource_name)",
+          "refresh": 1,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    }
+}

@@ -1,0 +1,65 @@
+# Monitoring Mode Configuration
+# This configuration monitors the reliability and performance of InfluxDB datasources
+# across multiple Grafana instances
+
+mode: monitor  # Set to "monitor" for datasource monitoring mode
+
+# Define Grafana instances to monitor
+targets:
+  - name: production
+    url: https://grafana-prod.example.com
+    datasources:
+      # You can specify either UID or name - name will be auto-resolved to UID
+      - name: InfluxDB Production Primary
+      - name: InfluxDB Production Secondary
+      # Or use UID directly if you know it
+      # - uid: influxdb-prod-1
+      #   name: InfluxDB Production Primary
+  
+  - name: staging
+    url: https://grafana-staging.example.com
+    datasources:
+      - name: InfluxDB Staging
+      # You can also mix approaches
+      - uid: influxdb-dev
+        name: InfluxDB Development
+
+# Test queries to verify datasource availability
+# These queries should be simple and fast, designed to test connectivity
+test_queries:
+  - name: basic_connectivity
+    description: Basic connectivity test - check if we can query anything
+    query: |
+      SHOW DATABASES
+    interval: 60  # Run every 60 seconds
+
+  - name: simple_measurement_query
+    description: Query a simple measurement to verify data access
+    query: |
+      SELECT count(*) FROM "cpu" WHERE time >= now() - 1h LIMIT 1
+    interval: 300  # Run every 5 minutes
+
+  - name: recent_data_check
+    description: Verify recent data is available
+    query: |
+      SELECT last(*) FROM "cpu" WHERE time >= now() - 10m
+    interval: 120  # Run every 2 minutes
+
+# Exporter settings
+exporter:
+  port: 8080
+  path: /metrics
+  health_path: /health
+
+# Logging configuration
+logging:
+  level: info
+  format: json
+
+# Authentication
+# Set these environment variables for each target:
+# - GRAFANA_production_TOKEN or GRAFANA_production_USERNAME + GRAFANA_production_PASSWORD
+# - GRAFANA_staging_TOKEN or GRAFANA_staging_USERNAME + GRAFANA_staging_PASSWORD
+#
+# Or use global fallback:
+# - GRAFANA_TOKEN or GRAFANA_USERNAME + GRAFANA_PASSWORD

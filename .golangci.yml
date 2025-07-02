@@ -1,0 +1,119 @@
+# GolangCI-Lint configuration for Grafana InfluxDB Exporter
+
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  gocyclo:
+    min-complexity: 15
+
+  gofmt:
+    simplify: true
+
+  goimports:
+    local-prefixes: grafana-influx-exporter
+
+  golint:
+    min-confidence: 0.8
+
+  govet:
+    check-shadowing: true
+
+  maligned:
+    suggest-new: true
+
+  misspell:
+    locale: US
+
+  revive:
+    min-confidence: 0.8
+
+  unparam:
+    check-exported: false
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - varcheck
+    - structcheck
+    - deadcode
+    - gocyclo
+    - gofmt
+    - goimports
+    - misspell
+    - revive
+    - unparam
+    - unconvert
+    - dupl
+    - goconst
+    - gocognit
+    - godot
+    - godox
+    - goerr113
+    - gofumpt
+    - goprintffuncname
+    - gosec
+    - ifshort
+    - importas
+    - makezero
+    - nakedret
+    - nilerr
+    - nlreturn
+    - noctx
+    - prealloc
+    - predeclared
+    - rowserrcheck
+    - sqlclosecheck
+    - tparallel
+    - wastedassign
+    - whitespace
+
+  disable:
+    - maligned  # deprecated
+    - golint    # deprecated
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+
+    # Exclude known linters from partially hard-to-fix issues
+    - linters:
+        - errcheck
+      text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
+
+    # Exclude lll issues for long lines with go:generate
+    - linters:
+        - lll
+      source: "^//go:generate "
+
+  # Maximum issues count per one linter. Set to 0 to disable
+  max-issues-per-linter: 0
+
+  # Maximum count of issues with the same text. Set to 0 to disable
+  max-same-issues: 0
+
+  # Show only new issues: if there are unstaged changes or untracked files,
+  # only those changes are analyzed, else only changes in HEAD~ are analyzed.
+  new: false
